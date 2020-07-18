@@ -7,7 +7,6 @@
 ##
 
 import sys
-#from sudocul import grid
 
 def get_nb(list):
     dest = []
@@ -31,6 +30,4 @@ def load_grid():
                     tmp_grid[pos].append(temp[y][x])
             pos += 1
     buffer.close()
-
-if __name__ == "__main__":
-    load_grid()
+    return tmp_grid
