@@ -8,8 +8,7 @@
 
 grid = [
     [0, 7, 0, 0, 6, 0, 8, 0, 0],
-    [0, 3, 0, 0, 0, 0, 0, 0, 6],
-    [0, 0, 0, 0, 0, 0, 0, 6, 0],
+    [0, 3, 0, 0, 0, 0, 0, 6, 0],
     [0, 0, 0, 0, 0, 0, 0, 2, 7],
     [0, 2, 9, 0, 5, 0, 0, 1, 0],
     [0, 0, 4, 0, 3, 0, 7, 8, 0],
@@ -19,32 +18,71 @@ grid = [
     [0, 0, 2, 0, 0, 9, 0, 7, 0]
 ]
 
-def is_not_in_the_line(grid_arr, line, value):
-    for i in range (len(grid_arr[line])):
-        if grid_arr[line][i] == value:
-            return false
-    return true
 
-def is_not_in_the_column(grid_arr, column, value):
-    for i in range (len(grid_arr)):
-        if grid_arr[i][column] == value:
-            return false
-    return true
+def is_not_in_the_line(line, value):
+    for i in range (0, 9):
+        if grid[line][i] == value:
+            return False
+    return True
 
-def is_not_in_the_block(grid_arr, value, pos_y, pos_x):
-    pos_y = pos_y - (pos_y % 3)
-    pos_x = pos_x - (pos_x % 3)
-    for x in range (pos_x, pos_x + 3):
-        for y in range (pos_y, pos_y + 3):
-            if grid_arr[y][x] == value:
-                return false
-    return true
 
-def solver(grid_arr, pos_y, pos_x):
-    for new_value in range (1, 9):
-        if is_not_in_the_column(grid_arr, x, new_value) == true && is_not_in_the_line(grid_arr, y, new_value) == true:
-            grid_arr[pos_y][pos_x] = new_value
-        else:
-        
-        
-    
+def is_not_in_the_column(column, value):
+    for i in range (0, 9):
+        if grid[i][column] == value:
+            return False
+    return True
+
+
+def is_not_in_the_block(pos_y, pos_x, value):
+    i = pos_y - (pos_y % 3)
+    j = pos_x - (pos_x % 3)
+    y = i
+    x = j
+    while y < i + 3:
+        while x < j + 3:
+            if grid[y][x] == value:
+                return False
+            x += 1
+        y += 1
+    return True
+
+
+def solver(pos):
+    if pos == 9 * 9:
+        return True
+    y = int(pos / 9)
+    x = int(pos % 9)
+    if grid[y][x] != 0:
+        return solver(pos + 1)
+    for new_value in range (1, 10):
+        if is_not_in_the_column(x, new_value) == True and is_not_in_the_line(y, new_value) == True and is_not_in_the_block(y, x, new_value) == True:
+            grid[y][x] = new_value
+            if solver(pos + 1) == True:
+                return True
+    grid[y][x] = 0
+    return False
+
+
+def display(grid_arr):
+    for y in range(len(grid_arr)):
+        if y % 3 == 0:
+            print("-------------------------")
+        print("|", end=' ')
+        for x in range(len(grid_arr[y])):
+            print(grid_arr[y][x], end=' ')
+            if x % 3 == 2:
+                print("|", end=' ')
+        print("\n", end='')
+    print("-------------------------")
+
+
+def main():
+    print("avant:")
+    display(grid);
+    solver(0);
+    print("\n\napres:")
+    display(grid);
+
+
+if __name__ == "__main__":
+    main()
