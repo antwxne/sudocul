@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-##
-## EPITECH PROJECT, 2020
-## sudocul
-## File description:
-## script to resolve sudoku
-##
 
 from loading import *
 
