@@ -37,7 +37,7 @@ def solver(pos):
         return True
     y = int(pos / 9)
     x = int(pos % 9)
-    if grid[y][x] != 0:
+    if grid[y][x] != '0':
         return solver(pos + 1)
     for new_value in range (1, 10):
         if is_not_in_the_column(x, new_value) == True and is_not_in_the_line(y, new_value) == True and is_not_in_the_block(y, x, new_value) == True:
