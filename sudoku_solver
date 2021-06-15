@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
 from loading import *
-
-grid = load_grid()
+import sys
+try:
+    grid = load_grid()
+except:
+    print("can't open grid.txt")
+    sys.exit(1)
 
 def is_not_in_the_line(line, value):
     for i in range (0, 9):
