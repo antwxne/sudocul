@@ -21,7 +21,7 @@ def load_grid():
             tmp_grid.append([])
             for x in range(len(temp[y])):
                 if temp[y][x].isdigit():
-                    tmp_grid[pos].append(temp[y][x])
+                    tmp_grid[pos].append(int(temp[y][x]))
             pos += 1
     buffer.close()
     return tmp_grid
