@@ -1,4 +1,5 @@
-use std::{error::Error, fmt::Display, usize};
+use csv::Writer;
+use std::{error::Error, fmt::Display, io, usize};
 
 const fn rounded_sqrt(n: usize) -> usize {
     let mut i = 1;
@@ -43,6 +44,40 @@ impl<const SIZE: usize> Grid<SIZE> {
         Ok(Grid {
             grid: new_grid_array,
         })
+    }
+
+    pub fn to_csv_file(&self, file: &std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+        self.write_csv_to_writer(
+            &mut csv::WriterBuilder::new()
+                .delimiter(b',')
+                .quote_style(csv::QuoteStyle::NonNumeric)
+                .from_path(file)?,
+        )
+    }
+
+    pub fn print_as_csv(&self) -> Result<(), Box<dyn Error>> {
+        self.write_csv_to_writer(
+            &mut csv::WriterBuilder::new()
+                .delimiter(b',')
+                .quote_style(csv::QuoteStyle::NonNumeric)
+                .from_writer(io::stdout()),
+        )
+    }
+
+    fn write_csv_to_writer<T: std::io::Write>(
+        &self,
+        writer: &mut Writer<T>,
+    ) -> Result<(), Box<dyn Error>> {
+        for row in self.grid {
+            writer.write_record(row.map(|elem| {
+                if elem == Self::EMPTY_CASE {
+                    return " ".to_string();
+                }
+                elem.to_string()
+            }))?;
+        }
+        writer.flush()?;
+        Ok(())
     }
 
     pub fn solve(&mut self) -> bool {
@@ -120,23 +155,28 @@ impl<const SIZE: usize> Grid<SIZE> {
 
 impl<const SIZE: usize> Display for Grid<SIZE> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        const LINE: &'static str = "--------------------";
+        let line: String = "-".repeat(SIZE * 4 + 3);
+        let big_line: String = "=".repeat(SIZE * 4 + 3);
 
-        writeln!(f, "{}", &LINE)?;
-        for row in self.grid {
+        writeln!(f, "{}", &big_line)?;
+        for (index, row) in self.grid.iter().enumerate() {
             writeln!(
                 f,
-                "|{}|",
+                "| {} |",
                 row.map(|elem| {
                     if elem == Self::EMPTY_CASE {
                         return " ".to_string();
                     }
                     elem.to_string()
                 })
-                .join("|")
+                .join(" | ")
                 .as_str()
             )?;
-            writeln!(f, "{}", &LINE)?;
+            if index != 0 && (index + 1) % Self::BOX_SIZE == 0 {
+                writeln!(f, "{}", &big_line)?;
+            } else {
+                writeln!(f, "{}", &line)?;
+            }
         }
         Ok(())
     }

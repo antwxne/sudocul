@@ -13,6 +13,8 @@ struct Cli {
     size: usize,
     #[command(flatten)]
     inputs: Inputs,
+    #[command(flatten)]
+    outputs: Outputs,
 }
 
 #[derive(Args, Debug)]
@@ -26,10 +28,35 @@ struct Inputs {
     content: Option<String>,
 }
 
+#[derive(Args, Debug)]
+#[group(required = false, multiple = false)]
+struct Outputs {
+    /// Path to the the output CSV file
+    #[arg(short)]
+    csv_file: Option<std::path::PathBuf>,
+    /// print in the terminal as a CSV file
+    #[arg(long, default_value_t = false)]
+    term: bool,
+}
+
 seq!(N in 2..=10{
 const SIZE_~N: usize = N * N;
 }
 );
+
+fn display_grid<const SIZE: usize>(
+    grid: Grid<SIZE>,
+    outputs: &Outputs,
+) -> Result<(), Box<dyn Error>> {
+    if let Some(outputfile) = &outputs.csv_file {
+        grid.to_csv_file(outputfile)?
+    } else if outputs.term {
+        grid.print_as_csv()?
+    } else {
+        println!("{grid}");
+    }
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
@@ -44,7 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 .from_path(path)?,
                         )?;
                         grid.solve();
-                        println!("{}", grid);
+                        display_grid(grid, &args.outputs)?
                     })*
             _ => unimplemented!()
         };
@@ -59,7 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             .from_reader(content.as_bytes()),
                     )?;
                     grid.solve();
-                    println!("{}", grid);
+                    display_grid(grid, &args.outputs)?
                 })*
             _ => unimplemented!()
             };
