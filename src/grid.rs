@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{error::Error, fmt::Display, usize};
 
 const fn rounded_sqrt(n: usize) -> usize {
     let mut i = 1;
@@ -12,19 +12,38 @@ const fn rounded_sqrt(n: usize) -> usize {
 }
 
 #[derive(Debug)]
-pub struct Grid<const COLS: usize, const ROWS: usize> {
-    pub grid: [[usize; COLS]; ROWS],
+pub struct Grid<const SIZE: usize> {
+    pub grid: [[usize; SIZE]; SIZE],
 }
 
-impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
-    const BOX_SIZE: usize = rounded_sqrt(COLS);
+impl<const SIZE: usize> Grid<SIZE> {
+    const BOX_SIZE: usize = rounded_sqrt(SIZE);
     const EMPTY_CASE: usize = 0;
 
     #[allow(dead_code)]
-    pub fn new() -> Self {
-        Grid {
-            grid: [[0; COLS]; ROWS],
+    pub fn from_csv<T: std::io::Read>(
+        csv_reader: &mut csv::Reader<T>,
+    ) -> Result<Self, Box<dyn Error>> {
+        let mut new_grid_array: [[usize; SIZE]; SIZE] = [[0; SIZE]; SIZE];
+        for (i, result) in csv_reader.records().enumerate() {
+            if i >= SIZE {
+                panic!("Maximun grid size: {}", SIZE);
+            }
+            let record = result?;
+            new_grid_array[i] = record
+                .iter()
+                .map(|elem| {
+                    elem.parse::<usize>()
+                        .expect("Expect number only in the grid")
+                })
+                .collect::<Vec<usize>>()
+                .as_slice()
+                .try_into()?;
         }
+
+        Ok(Grid {
+            grid: new_grid_array,
+        })
     }
 
     pub fn solve(&mut self) -> bool {
@@ -34,7 +53,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
         if !self.find_empty_case(&mut row, &mut col) {
             return true;
         }
-        for number in 1..=COLS {
+        for number in 1..=SIZE {
             if self.is_number_safe(&number, &row, &col) {
                 self.grid[row][col] = number;
                 if self.solve() {
@@ -54,8 +73,8 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
     }
 
     fn find_empty_case(&self, row: &mut usize, col: &mut usize) -> bool {
-        while *row < ROWS {
-            while *col < COLS {
+        while *row < SIZE {
+            while *col < SIZE {
                 if self.grid[*row][*col] == Self::EMPTY_CASE {
                     return true;
                 }
@@ -68,7 +87,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
     }
 
     fn is_in_row(&self, value: &usize, row: &usize) -> bool {
-        for col in 0..COLS {
+        for col in 0..SIZE {
             if self.grid[*row][col] == *value {
                 return true;
             }
@@ -77,7 +96,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
     }
 
     fn is_in_col(&self, value: &usize, col: &usize) -> bool {
-        for row in 0..ROWS {
+        for row in 0..SIZE {
             if self.grid[row][*col] == *value {
                 return true;
             }
@@ -100,7 +119,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
     }
 }
 
-impl<const COLS: usize, const ROWS: usize> Display for Grid<COLS, ROWS> {
+impl<const SIZE: usize> Display for Grid<SIZE> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         const LINE: &'static str = "--------------------";
 
