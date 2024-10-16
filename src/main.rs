@@ -2,6 +2,7 @@ mod grid;
 use std::error::Error;
 
 use grid::Grid;
+use seq_macro::seq;
 
 use clap::{Args, Parser};
 
@@ -25,24 +26,44 @@ struct Inputs {
     content: Option<String>,
 }
 
+seq!(N in 2..=10{
+const SIZE_~N: usize = N * N;
+}
+);
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
+
     if let Some(path) = args.inputs.path {
-        let mut grid: Grid<9> = Grid::from_csv(
-            &mut csv::ReaderBuilder::new()
-                .has_headers(false)
-                .from_path(path)?,
-        )?;
-        grid.solve();
-        println!("{}", grid);
+        seq!(N in 2..=10 {
+        match args.size {
+            #(SIZE_~N => {
+                let mut grid: Grid<SIZE_~N> = Grid::from_csv(
+                        &mut csv::ReaderBuilder::new()
+                                .has_headers(false)
+                                .from_path(path)?,
+                        )?;
+                        grid.solve();
+                        println!("{}", grid);
+                    })*
+            _ => unimplemented!()
+        };
+        });
     } else if let Some(content) = args.inputs.content {
-        let mut grid: Grid<9> = Grid::from_csv(
-            &mut csv::ReaderBuilder::new()
-                .has_headers(false)
-                .from_reader(content.as_bytes()),
-        )?;
-        grid.solve();
-        println!("{}", grid);
+        seq!(N in 2..=10 {
+            match args.size {
+            #(SIZE_~N => {
+                let mut grid: Grid<SIZE_~N> = Grid::from_csv(
+                        &mut csv::ReaderBuilder::new()
+                            .has_headers(false)
+                            .from_reader(content.as_bytes()),
+                    )?;
+                    grid.solve();
+                    println!("{}", grid);
+                })*
+            _ => unimplemented!()
+            };
+        });
     }
     Ok(())
 }

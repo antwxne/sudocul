@@ -20,7 +20,6 @@ impl<const SIZE: usize> Grid<SIZE> {
     const BOX_SIZE: usize = rounded_sqrt(SIZE);
     const EMPTY_CASE: usize = 0;
 
-    #[allow(dead_code)]
     pub fn from_csv<T: std::io::Read>(
         csv_reader: &mut csv::Reader<T>,
     ) -> Result<Self, Box<dyn Error>> {
