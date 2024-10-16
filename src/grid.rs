@@ -11,6 +11,7 @@ const fn rounded_sqrt(n: usize) -> usize {
     return 0;
 }
 
+#[derive(Debug)]
 pub struct Grid<const COLS: usize, const ROWS: usize> {
     pub grid: [[usize; COLS]; ROWS],
 }
@@ -34,7 +35,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
             return true;
         }
         for number in 1..=COLS {
-            if self.number_is_safe(&row, &col, &number) {
+            if self.is_number_safe(&number, &row, &col) {
                 self.grid[row][col] = number;
                 if self.solve() {
                     return true;
@@ -45,7 +46,7 @@ impl<const COLS: usize, const ROWS: usize> Grid<COLS, ROWS> {
         false
     }
 
-    fn number_is_safe(&self, row: &usize, col: &usize, value: &usize) -> bool {
+    fn is_number_safe(&self, value: &usize, row: &usize, col: &usize) -> bool {
         !self.is_in_row(value, row)
             && !self.is_in_col(value, col)
             && !self.is_in_box(value, row, col)
@@ -120,5 +121,140 @@ impl<const COLS: usize, const ROWS: usize> Display for Grid<COLS, ROWS> {
             writeln!(f, "{}", &LINE)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Grid;
+    const EXEMPLE_9_X9_GRID: [[usize; 9]; 9] = [
+        [4, 5, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 0, 7, 0, 6, 3, 0],
+        [0, 0, 0, 0, 0, 0, 0, 2, 8],
+        [0, 0, 0, 9, 5, 0, 0, 0, 0],
+        [0, 8, 6, 0, 0, 0, 2, 0, 0],
+        [0, 2, 0, 6, 0, 0, 7, 5, 0],
+        [0, 0, 0, 0, 0, 0, 4, 7, 6],
+        [0, 7, 0, 0, 4, 5, 0, 0, 0],
+        [0, 0, 8, 0, 0, 9, 0, 0, 0],
+    ];
+
+    #[test]
+    fn is_in_row_ok() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_row(&2, &1);
+        const EXPECTED: bool = true;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_in_row_ko() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_row(&9, &1);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_in_col_ok() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_col(&2, &1);
+        const EXPECTED: bool = true;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_in_col_ko() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_col(&9, &1);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_in_box_ok() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_box(&4, &8, &7);
+        const EXPECTED: bool = true;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_in_box_ko() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_in_box(&9, &8, &7);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_number_safe_ok() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_number_safe(&3, &4, &4);
+        const EXPECTED: bool = true;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_number_safe_ko_non_empty() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_number_safe(&3, &3, &4);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_number_safe_ko_on_row() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_number_safe(&8, &4, &4);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_number_safe_ko_on_col() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_number_safe(&7, &4, &4);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn is_number_safe_ko_on_box() {
+        let grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        let got = grid.is_number_safe(&9, &4, &4);
+        const EXPECTED: bool = false;
+        assert_eq!(got, EXPECTED);
+    }
+    #[test]
+    fn solve() {
+        let mut grid = Grid {
+            grid: EXEMPLE_9_X9_GRID.clone(),
+        };
+        const EXPECTED: [[usize; 9]; 9] = [
+            [4, 5, 3, 8, 2, 6, 1, 9, 7],
+            [8, 9, 2, 5, 7, 1, 6, 3, 4],
+            [1, 6, 7, 4, 9, 3, 5, 2, 8],
+            [7, 1, 4, 9, 5, 2, 8, 6, 3],
+            [5, 8, 6, 1, 3, 7, 2, 4, 9],
+            [3, 2, 9, 6, 8, 4, 7, 5, 1],
+            [9, 3, 5, 2, 1, 8, 4, 7, 6],
+            [6, 7, 1, 3, 4, 5, 9, 8, 2],
+            [2, 4, 8, 7, 6, 9, 3, 1, 5],
+        ];
+        grid.solve();
+        assert_eq!(grid.grid, EXPECTED);
     }
 }

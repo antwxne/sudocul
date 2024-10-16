@@ -17,5 +17,5 @@ fn main() {
             ],
     };
     grid.solve();
-    println!("{grid}");
+    println!("{:?}", grid);
 }
