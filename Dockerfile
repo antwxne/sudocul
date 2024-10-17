@@ -8,6 +8,6 @@ RUN cargo build --release
 FROM rust:slim-bullseye
 
 WORKDIR /app
-COPY --from=builder /build/target/release/sudocul /app/sudocul
+COPY --from=builder /build/target/release/sudocul_solver /app/sudocul_solver
 ENV PATH="/app:$PATH"
 WORKDIR /shared
