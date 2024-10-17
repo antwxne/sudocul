@@ -63,6 +63,26 @@ impl<const SIZE: usize> Grid<SIZE> {
                 .from_writer(io::stdout()),
         )
     }
+    pub fn print_as_json(&self) -> Result<(), Box<dyn Error>> {
+        println!(
+            "[{}]",
+            self.grid
+                .map(|row| {
+                    format!(
+                        "[{}]",
+                        row.map(|elem| {
+                            if elem == Self::EMPTY_CASE {
+                                return " ".to_string();
+                            }
+                            elem.to_string()
+                        })
+                        .join(",")
+                    )
+                })
+                .join(",")
+        );
+        Ok(())
+    }
 
     fn write_csv_to_writer<T: std::io::Write>(
         &self,

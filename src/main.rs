@@ -36,7 +36,11 @@ struct Outputs {
     csv_file: Option<std::path::PathBuf>,
     /// print in the terminal as a CSV file
     #[arg(long, default_value_t = false)]
-    term: bool,
+    json_term: bool,
+
+    /// print in the terminal in CSV format
+    #[arg(long, default_value_t = false)]
+    csv_term: bool,
 }
 
 seq!(N in 2..=10{
@@ -50,8 +54,10 @@ fn display_grid<const SIZE: usize>(
 ) -> Result<(), Box<dyn Error>> {
     if let Some(outputfile) = &outputs.csv_file {
         grid.to_csv_file(outputfile)?
-    } else if outputs.term {
+    } else if outputs.csv_term {
         grid.print_as_csv()?
+    } else if outputs.json_term {
+        grid.print_as_json()?
     } else {
         println!("{grid}");
     }
